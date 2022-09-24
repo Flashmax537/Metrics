@@ -3,18 +3,18 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MetricsAgent.Controllers
 {
-    [Route("api/metrics/network/from")]
+    [Route("api/metrics/ram/available/from")]
     [ApiController]
-    public class NetworkMetricsController : ControllerBase
+    public class RamMetricsController : ControllerBase
     {
         /// <summary>
-        /// Получить статистику по нагрузке на сеть за период
+        /// Получить статистику по нагрузке на оперативную память за период
         /// </summary>
         /// <param name="fromTime">Время начала периода</param>
         /// <param name="toTime">Время окончания периода</param>
         /// <returns></returns>
         [HttpGet("from/{fromTime}/to/{toTime}")]
-        public IActionResult GetNetworkMetrics(
+        public IActionResult GetRamMetrics(
             [FromRoute] TimeSpan fromTime, [FromRoute] TimeSpan toTime)
         {
             return Ok();

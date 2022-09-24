@@ -8,21 +8,21 @@ using System.Threading.Tasks;
 
 namespace MetricsAgentTests
 {
-    public class CpuMetricsControllerTests
+    public class HddMetricsControllerTests
     {
-        private CpuMetricsController _cpuMetricsController;
+        private HddMetricsController _hddMetricsController;
 
-        public CpuMetricsControllerTests()
+        public HddMetricsControllerTests()
         {
-            _cpuMetricsController = new CpuMetricsController();
+            _hddMetricsController = new HddMetricsController();
         }
 
         [Fact]
-        public void GetCpuMetrics_ReturnOk()
+        public void GetHddMetrics_ReturnOk()
         {
             TimeSpan fromTime = TimeSpan.FromSeconds(0);
             TimeSpan toTime = TimeSpan.FromSeconds(100);
-            var result = _cpuMetricsController.GetCpuMetrics(fromTime, toTime);
+            var result = _hddMetricsController.GetHddMetrics(fromTime, toTime);
             Assert.IsAssignableFrom<IActionResult>(result);
         }
     }

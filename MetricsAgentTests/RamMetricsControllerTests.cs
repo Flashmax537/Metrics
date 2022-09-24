@@ -8,21 +8,21 @@ using System.Threading.Tasks;
 
 namespace MetricsAgentTests
 {
-    public class CpuMetricsControllerTests
+    public class RamMetricsControllerTests
     {
-        private CpuMetricsController _cpuMetricsController;
+        private RamMetricsController _ramMetricsController;
 
-        public CpuMetricsControllerTests()
+        public RamMetricsControllerTests()
         {
-            _cpuMetricsController = new CpuMetricsController();
+            _ramMetricsController = new RamMetricsController();
         }
 
         [Fact]
-        public void GetCpuMetrics_ReturnOk()
+        public void GetRamMetrics_ReturnOk()
         {
             TimeSpan fromTime = TimeSpan.FromSeconds(0);
             TimeSpan toTime = TimeSpan.FromSeconds(100);
-            var result = _cpuMetricsController.GetCpuMetrics(fromTime, toTime);
+            var result = _ramMetricsController.GetRamMetrics(fromTime, toTime);
             Assert.IsAssignableFrom<IActionResult>(result);
         }
     }

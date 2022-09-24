@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MetricsManager.Controllers
 {
-    [Route("api/ram")]
+    [Route("api/dotNet")]
     [ApiController]
-    public class RamMetricsController : ControllerBase
+    public class DotNetMetricsController : ControllerBase
     {
         [HttpGet("agent/{agentId}/from/{fromTime}/to/{toTime}")]
         public IActionResult GetMetricsFromAgent(

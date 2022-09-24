@@ -51,10 +51,6 @@ namespace MetricsManager.Controllers
                 _agentPool.Agents[agentId].Enable = false;
             return Ok();
         }
-
-        // TODO: Домашнее задание [Пункт 1]
-        // Добавьте метод в контроллер агентов проекта, относящегося к менеджеру метрик, который
-        // позволяет получить список зарегистрированных в системе объектов.
         
         [HttpGet("get")]
         public ActionResult<AgentInfo[]> GetAllAgents()
