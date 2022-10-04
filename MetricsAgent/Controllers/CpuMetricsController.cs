@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using MetricsAgent.Models;
+using MetricsAgent.Models.Requests;
+using MetricsAgent.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MetricsAgent.Controllers
@@ -7,6 +9,32 @@ namespace MetricsAgent.Controllers
     [ApiController]
     public class CpuMetricsController : ControllerBase
     {
+        #region Services
+
+        private readonly ILogger<CpuMetricsController> _logger;
+        private readonly ICpuMetricsRepository _cpuMetricsRepository;
+
+        #endregion
+
+        public CpuMetricsController(
+            ICpuMetricsRepository cpuMetricsRepository,
+            ILogger<CpuMetricsController> logger)
+        {
+            _cpuMetricsRepository = cpuMetricsRepository;
+            _logger = logger;
+        }
+
+        [HttpPost("create")]
+        public IActionResult Create([FromBody] CpuMetricCreateRequest request)
+        {
+            _cpuMetricsRepository.Create(new Models.CpuMetric
+            {
+                Value = request.Value,
+                Time = (int)request.Time.TotalSeconds
+            });
+            return Ok();
+        }
+
         /// <summary>
         /// Получить статистику по нагрузке на ЦП за период
         /// </summary>
@@ -17,7 +45,8 @@ namespace MetricsAgent.Controllers
         public IActionResult GetCpuMetrics(
             [FromRoute] TimeSpan fromTime, [FromRoute] TimeSpan toTime)
         {
-            return Ok();
+            _logger.LogInformation("Get cpu metrics call.");
+            return Ok(_cpuMetricsRepository.GetByTimePeriod(fromTime, toTime));
         }
     }
 }

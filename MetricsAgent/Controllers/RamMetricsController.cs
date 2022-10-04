@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using MetricsAgent.Models.Requests;
+using MetricsAgent.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MetricsAgent.Controllers
@@ -7,6 +9,33 @@ namespace MetricsAgent.Controllers
     [ApiController]
     public class RamMetricsController : ControllerBase
     {
+        #region Services
+
+        private readonly ILogger<RamMetricsController> _logger;
+        private readonly IRamMetricsRepository _ramMetricsRepository;
+
+        #endregion
+
+
+        public RamMetricsController(
+            IRamMetricsRepository ramMetricsRepository,
+            ILogger<RamMetricsController> logger)
+        {
+            _ramMetricsRepository = ramMetricsRepository;
+            _logger = logger;
+        }
+
+        [HttpPost("create")]
+        public IActionResult Create([FromBody] RamMetricCreateRequest request)
+        {
+            _ramMetricsRepository.Create(new Models.RamMetric
+            {
+                Value = request.Value,
+                Time = (int)request.Time.TotalSeconds
+            });
+            return Ok();
+        }
+
         /// <summary>
         /// Получить статистику по нагрузке на оперативную память за период
         /// </summary>
@@ -17,7 +46,8 @@ namespace MetricsAgent.Controllers
         public IActionResult GetRamMetrics(
             [FromRoute] TimeSpan fromTime, [FromRoute] TimeSpan toTime)
         {
-            return Ok();
+            _logger.LogInformation("Get ram metrics call.");
+            return Ok(_ramMetricsRepository.GetByTimePeriod(fromTime, toTime));
         }
     }
 }

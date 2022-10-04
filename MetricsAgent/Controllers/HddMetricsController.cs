@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using MetricsAgent.Models.Requests;
+using MetricsAgent.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MetricsAgent.Controllers
@@ -7,6 +9,33 @@ namespace MetricsAgent.Controllers
     [ApiController]
     public class HddMetricsController : ControllerBase
     {
+        #region Services
+
+        private readonly ILogger<HddMetricsController> _logger;
+        private readonly IHddMetricsRepository _hddMetricsRepository;
+
+        #endregion
+
+
+        public HddMetricsController(
+            IHddMetricsRepository hddMetricsRepository,
+            ILogger<HddMetricsController> logger)
+        {
+            _hddMetricsRepository = hddMetricsRepository;
+            _logger = logger;
+        }
+
+        [HttpPost("create")]
+        public IActionResult Create([FromBody] HddMetricCreateRequest request)
+        {
+            _hddMetricsRepository.Create(new Models.HddMetric
+            {
+                Value = request.Value,
+                Time = (int)request.Time.TotalSeconds
+            });
+            return Ok();
+        }
+
         /// <summary>
         /// Получить статистику по нагрузке на жесткий диск за период
         /// </summary>
@@ -17,7 +46,8 @@ namespace MetricsAgent.Controllers
         public IActionResult GetHddMetrics(
             [FromRoute] TimeSpan fromTime, [FromRoute] TimeSpan toTime)
         {
-            return Ok();
+            _logger.LogInformation("Get hdd metrics call.");
+            return Ok(_hddMetricsRepository.GetByTimePeriod(fromTime, toTime));
         }
     }
 }

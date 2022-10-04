@@ -1,6 +1,8 @@
 ﻿using MetricsManager.Controllers;
 using MetricsManager.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,8 +19,11 @@ namespace MetricsManagerTests
 
         public AgentsControllerTests()
         {
+            var mockLogger = new Mock<ILogger<AgentsController>>();
+            var logger = mockLogger.Object;
             _agentPool = LazySingleton.Instance;
-            _agentsController = new AgentsController(_agentPool);
+
+            _agentsController = new AgentsController(_agentPool, logger);
         }
 
         [Theory]

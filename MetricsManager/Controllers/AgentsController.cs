@@ -12,14 +12,17 @@ namespace MetricsManager.Controllers
         #region Services
 
         private readonly AgentPool _agentPool;
+        private readonly ILogger<AgentsController> _logger;
 
         #endregion
 
         #region Constuctors
 
-        public AgentsController(AgentPool agentPool)
+        public AgentsController(AgentPool agentPool,
+            ILogger<AgentsController> logger)
         {
             _agentPool = agentPool;
+            _logger = logger;
         }
 
         #endregion
@@ -29,6 +32,7 @@ namespace MetricsManager.Controllers
         [HttpPost("register")]
         public IActionResult RegisterAgent([FromBody] AgentInfo agentInfo)
         {
+            _logger.LogInformation("Register agent call.");
             if (agentInfo != null)
             {
                 _agentPool.Add(agentInfo);
@@ -39,6 +43,7 @@ namespace MetricsManager.Controllers
         [HttpPut("enable/{agentId}")]
         public IActionResult EnableAgentById([FromRoute] int agentId)
         {
+            _logger.LogInformation("Enable agent call.");
             if (_agentPool.Agents.ContainsKey(agentId))
                 _agentPool.Agents[agentId].Enable = true;
             return Ok();
@@ -47,6 +52,7 @@ namespace MetricsManager.Controllers
         [HttpPut("disable/{agentId}")]
         public IActionResult DisableAgentById([FromRoute] int agentId)
         {
+            _logger.LogInformation("Disable agent call.");
             if (_agentPool.Agents.ContainsKey(agentId))
                 _agentPool.Agents[agentId].Enable = false;
             return Ok();
@@ -55,11 +61,10 @@ namespace MetricsManager.Controllers
         [HttpGet("get")]
         public ActionResult<AgentInfo[]> GetAllAgents()
         {
+            _logger.LogInformation("Get all agent call.");
             return Ok(_agentPool.Get());
         }
 
-
         #endregion
-
     }
 }

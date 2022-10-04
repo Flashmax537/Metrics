@@ -1,4 +1,9 @@
+using MetricsManager.Converters;
 using MetricsManager.Models;
+using Microsoft.AspNetCore.HttpLogging;
+using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi.Models;
+using NLog.Web;
 
 namespace MetricsManager
 {
@@ -8,14 +13,47 @@ namespace MetricsManager
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            #region Configure logging
+
+            builder.Host.ConfigureLogging(logging =>
+            {
+                logging.ClearProviders();
+                logging.AddConsole();
+
+            }).UseNLog(new NLogAspNetCoreOptions() { RemoveLoggerFactoryFilter = true });
+
+            builder.Services.AddHttpLogging(logging =>
+            {
+                logging.LoggingFields = HttpLoggingFields.All | HttpLoggingFields.RequestQuery;
+                logging.RequestBodyLogLimit = 4096;
+                logging.ResponseBodyLogLimit = 4096;
+                logging.RequestHeaders.Add("Authorization");
+                logging.RequestHeaders.Add("X-Real-IP");
+                logging.RequestHeaders.Add("X-Forwarded-For");
+            });
+
+            #endregion
+
             // Add services to the container.
 
             builder.Services.AddSingleton<AgentPool>();
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers()
+               .AddJsonOptions(options =>
+                   options.JsonSerializerOptions.Converters.Add(new CustomTimeSpanConverter()));
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "MetricsManager", Version = "v1" });
+
+                // Поддержка TimeSpan
+                c.MapType<TimeSpan>(() => new OpenApiSchema
+                {
+                    Type = "string",
+                    Example = new OpenApiString("00:00:00")
+                });
+            });
 
             var app = builder.Build();
 
@@ -27,10 +65,8 @@ namespace MetricsManager
             }
 
             app.UseAuthorization();
-
-
+            app.UseHttpLogging();
             app.MapControllers();
-
             app.Run();
         }
     }

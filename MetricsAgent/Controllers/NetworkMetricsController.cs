@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using MetricsAgent.Models.Requests;
+using MetricsAgent.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MetricsAgent.Controllers
@@ -7,6 +9,33 @@ namespace MetricsAgent.Controllers
     [ApiController]
     public class NetworkMetricsController : ControllerBase
     {
+        #region Services
+
+        private readonly ILogger<NetworkMetricsController> _logger;
+        private readonly INetworkMetricsRepository _networkMetricsRepository;
+
+        #endregion
+
+
+        public NetworkMetricsController(
+            INetworkMetricsRepository networkMetricsRepository,
+            ILogger<NetworkMetricsController> logger)
+        {
+            _networkMetricsRepository = networkMetricsRepository;
+            _logger = logger;
+        }
+
+        [HttpPost("create")]
+        public IActionResult Create([FromBody] NetworkMetricCreateRequest request)
+        {
+            _networkMetricsRepository.Create(new Models.NetworkMetric
+            {
+                Value = request.Value,
+                Time = (int)request.Time.TotalSeconds
+            });
+            return Ok();
+        }
+
         /// <summary>
         /// Получить статистику по нагрузке на сеть за период
         /// </summary>
@@ -17,7 +46,8 @@ namespace MetricsAgent.Controllers
         public IActionResult GetNetworkMetrics(
             [FromRoute] TimeSpan fromTime, [FromRoute] TimeSpan toTime)
         {
-            return Ok();
+            _logger.LogInformation("Get network metrics call.");
+            return Ok(_networkMetricsRepository.GetByTimePeriod(fromTime, toTime));
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using MetricsAgent.Models.Requests;
+using MetricsAgent.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MetricsAgent.Controllers
@@ -7,6 +9,33 @@ namespace MetricsAgent.Controllers
     [ApiController]
     public class DotNetMetricsController : ControllerBase
     {
+        #region Services
+
+        private readonly ILogger<DotNetMetricsController> _logger;
+        private readonly IDotNetMetricsRepository _dotNetMetricsRepository;
+
+        #endregion
+
+
+        public DotNetMetricsController(
+            IDotNetMetricsRepository dotNetMetricsRepository,
+            ILogger<DotNetMetricsController> logger)
+        {
+            _dotNetMetricsRepository = dotNetMetricsRepository;
+            _logger = logger;
+        }
+
+        [HttpPost("create")]
+        public IActionResult Create([FromBody] DotNetMetricCreateRequest request)
+        {
+            _dotNetMetricsRepository.Create(new Models.DotNetMetric
+            {
+                Value = request.Value,
+                Time = (int)request.Time.TotalSeconds
+            });
+            return Ok();
+        }
+
         /// <summary>
         /// Получить статистику для приложений ASP.NET Core за период
         /// </summary>
@@ -17,7 +46,8 @@ namespace MetricsAgent.Controllers
         public IActionResult GetDotNetMetrics(
             [FromRoute] TimeSpan fromTime, [FromRoute] TimeSpan toTime)
         {
-            return Ok();
+            _logger.LogInformation("Get dotNet metrics call.");
+            return Ok(_dotNetMetricsRepository.GetByTimePeriod(fromTime, toTime));
         }
     }
 }
