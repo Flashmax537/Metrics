@@ -1,4 +1,7 @@
-﻿using MetricsAgent.Models.Requests;
+﻿using AutoMapper;
+using MetricsAgent.Models;
+using MetricsAgent.Models.Dto;
+using MetricsAgent.Models.Requests;
 using MetricsAgent.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -13,26 +16,24 @@ namespace MetricsAgent.Controllers
 
         private readonly ILogger<DotNetMetricsController> _logger;
         private readonly IDotNetMetricsRepository _dotNetMetricsRepository;
+        private readonly IMapper _mapper;
 
         #endregion
 
-
         public DotNetMetricsController(
             IDotNetMetricsRepository dotNetMetricsRepository,
-            ILogger<DotNetMetricsController> logger)
+            ILogger<DotNetMetricsController> logger,
+            IMapper mapper)
         {
             _dotNetMetricsRepository = dotNetMetricsRepository;
             _logger = logger;
+            _mapper = mapper;
         }
 
         [HttpPost("create")]
         public IActionResult Create([FromBody] DotNetMetricCreateRequest request)
         {
-            _dotNetMetricsRepository.Create(new Models.DotNetMetric
-            {
-                Value = request.Value,
-                Time = (int)request.Time.TotalSeconds
-            });
+            _dotNetMetricsRepository.Create(_mapper.Map<DotNetMetric>(request));
             return Ok();
         }
 
@@ -47,7 +48,8 @@ namespace MetricsAgent.Controllers
             [FromRoute] TimeSpan fromTime, [FromRoute] TimeSpan toTime)
         {
             _logger.LogInformation("Get dotNet metrics call.");
-            return Ok(_dotNetMetricsRepository.GetByTimePeriod(fromTime, toTime));
+            return Ok(_dotNetMetricsRepository.GetByTimePeriod(fromTime, toTime)
+                .Select(metric => _mapper.Map<DotNetMetricDto>(metric)).ToList());
         }
     }
 }

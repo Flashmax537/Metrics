@@ -1,4 +1,5 @@
-﻿using MetricsAgent.Controllers;
+﻿using AutoMapper;
+using MetricsAgent.Controllers;
 using MetricsAgent.Models;
 using MetricsAgent.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -16,16 +17,18 @@ namespace MetricsAgentTests
         {
             var mockLogger = new Mock<ILogger<NetworkMetricsController>>();
             var logger = mockLogger.Object;
+            var mockMapper = new Mock<IMapper>();
+            var mapper = mockMapper.Object;
             _mock = new Mock<INetworkMetricsRepository>();
 
-            _networkMetricsController = new NetworkMetricsController(_mock.Object, logger);
+            _networkMetricsController = new NetworkMetricsController(_mock.Object, logger, mapper);
         }
 
         [Fact]
         public void GetNetworkMetrics_ReturnOk()
         {
             TimeSpan fromTime = TimeSpan.FromSeconds(0);
-            TimeSpan toTime = TimeSpan.FromSeconds(100);
+            TimeSpan toTime = TimeSpan.FromSeconds(10800);
             var result = _networkMetricsController.GetNetworkMetrics(fromTime, toTime);
             Assert.IsAssignableFrom<IActionResult>(result);
         }

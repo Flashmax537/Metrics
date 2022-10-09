@@ -1,4 +1,6 @@
+using AutoMapper;
 using MetricsAgent.Converters;
+using MetricsAgent.Models;
 using MetricsAgent.Services;
 using MetricsAgent.Services.Impl;
 using Microsoft.AspNetCore.HttpLogging;
@@ -15,7 +17,23 @@ namespace MetricsAgent
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+            #region Configure Automapper
+
+            var mapperConfiguration = new MapperConfiguration(mp => mp.AddProfile(new
+                MapperProfile()));
+            var mapper = mapperConfiguration.CreateMapper();
+            builder.Services.AddSingleton(mapper);
+
+            #endregion
+
+            #region Configure Options
+
+            builder.Services.Configure<DatabaseOptions>(options =>
+            {
+                builder.Configuration.GetSection("Settings:DatabaseOptions").Bind(options);
+            });
+
+            #endregion
 
             #region Configure Repository
 
@@ -29,7 +47,7 @@ namespace MetricsAgent
 
             #region Configure Database
 
-            //ConfigureSqlLiteConnection(builder.Services);
+            //ConfigureSqlLiteConnection(builder);
 
             #endregion
 
@@ -86,10 +104,9 @@ namespace MetricsAgent
             app.Run();
         }
 
-        private static void ConfigureSqlLiteConnection(IServiceCollection services)
+        private static void ConfigureSqlLiteConnection(WebApplicationBuilder? builder)
         {
-            const string connectionString = "Data Source = metrics.db; Version = 3; Pooling = true; Max Pool Size = 100;";
-            var connection = new SQLiteConnection(connectionString);
+            var connection = new SQLiteConnection(builder.Configuration["Settings:DatabaseOptions:ConnectionString"].ToString());
             connection.Open();
             PrepareSchema(connection);
         }
@@ -100,31 +117,31 @@ namespace MetricsAgent
             {
                 // Задаём новый текст команды для выполнения
                 // Удаляем таблицу с метриками, если она есть в базе данных
-                command.CommandText = "DROP TABLE IF EXISTS cpuMetrics";
-                command.CommandText = "DROP TABLE IF EXISTS dotNetMetrics";
-                command.CommandText = "DROP TABLE IF EXISTS hddMetrics";
-                command.CommandText = "DROP TABLE IF EXISTS networkMetrics";
-                command.CommandText = "DROP TABLE IF EXISTS ramMetrics";
+                command.CommandText = "DROP TABLE IF EXISTS cpumetrics";
+                command.CommandText = "DROP TABLE IF EXISTS dotnetmetrics";
+                command.CommandText = "DROP TABLE IF EXISTS hddmetrics";
+                command.CommandText = "DROP TABLE IF EXISTS networkmetrics";
+                command.CommandText = "DROP TABLE IF EXISTS rammetrics";
                 // Отправляем запрос в базу данных
                 command.ExecuteNonQuery();
                 command.CommandText =
-                    @"CREATE TABLE cpuMetrics(id INTEGER
+                    @"CREATE TABLE cpumetrics(id INTEGER
                     PRIMARY KEY,
                     value INT, time INT);
 
-                    CREATE TABLE dotNetMetrics(id INTEGER
+                    CREATE TABLE dotnetmetrics(id INTEGER
                     PRIMARY KEY,
                     value INT, time INT);
 
-                    CREATE TABLE hddMetrics(id INTEGER
+                    CREATE TABLE hddmetrics(id INTEGER
                     PRIMARY KEY,
                     value INT, time INT);
 
-                    CREATE TABLE networkMetrics(id INTEGER
+                    CREATE TABLE networkmetrics(id INTEGER
                     PRIMARY KEY,
                     value INT, time INT);
 
-                    CREATE TABLE ramMetrics(id INTEGER
+                    CREATE TABLE rammetrics(id INTEGER
                     PRIMARY KEY,
                     value INT, time INT)";
                 command.ExecuteNonQuery();

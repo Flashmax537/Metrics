@@ -1,4 +1,5 @@
-﻿using Castle.Core.Logging;
+﻿using AutoMapper;
+using Castle.Core.Logging;
 using MetricsAgent.Controllers;
 using MetricsAgent.Models;
 using MetricsAgent.Services;
@@ -17,16 +18,18 @@ namespace MetricsAgentTests
         {
             var mockLogger = new Mock<ILogger<RamMetricsController>>();
             var logger = mockLogger.Object;
+            var mockMapper = new Mock<IMapper>();
+            var mapper = mockMapper.Object;
             _mock = new Mock<IRamMetricsRepository>();
 
-            _ramMetricsController = new RamMetricsController(_mock.Object, logger);
+            _ramMetricsController = new RamMetricsController(_mock.Object, logger, mapper);
         }
 
         [Fact]
         public void GetRamMetrics_ReturnOk()
         {
             TimeSpan fromTime = TimeSpan.FromSeconds(0);
-            TimeSpan toTime = TimeSpan.FromSeconds(100);
+            TimeSpan toTime = TimeSpan.FromSeconds(10800);
             var result = _ramMetricsController.GetRamMetrics(fromTime, toTime);
             Assert.IsAssignableFrom<IActionResult>(result);
         }

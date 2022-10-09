@@ -1,4 +1,5 @@
-﻿using MetricsAgent.Controllers;
+﻿using AutoMapper;
+using MetricsAgent.Controllers;
 using MetricsAgent.Models;
 using MetricsAgent.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -16,16 +17,18 @@ namespace MetricsAgentTests
         {
             var mockLogger = new Mock<ILogger<HddMetricsController>>();
             var logger = mockLogger.Object;
+            var mockMapper = new Mock<IMapper>();
+            var mapper = mockMapper.Object;
             _mock = new Mock<IHddMetricsRepository>();
 
-            _hddMetricsController = new HddMetricsController(_mock.Object, logger);
+            _hddMetricsController = new HddMetricsController(_mock.Object, logger, mapper);
         }
 
         [Fact]
         public void GetHddMetrics_ReturnOk()
         {
             TimeSpan fromTime = TimeSpan.FromSeconds(0);
-            TimeSpan toTime = TimeSpan.FromSeconds(100);
+            TimeSpan toTime = TimeSpan.FromSeconds(10800);
             var result = _hddMetricsController.GetHddMetrics(fromTime, toTime);
             Assert.IsAssignableFrom<IActionResult>(result);
         }
