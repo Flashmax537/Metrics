@@ -51,5 +51,12 @@ namespace MetricsAgent.Controllers
             return Ok(_hddMetricsRepository.GetByTimePeriod(fromTime, toTime)
                 .Select(metric => _mapper.Map<HddMetricDto>(metric)).ToList());
         }
+
+        [HttpGet("all")]
+        public ActionResult<IList<HddMetricDto>> GetAllCpuMetrics()
+        {
+            return Ok(_hddMetricsRepository.GetAll()
+                .Select(metric => _mapper.Map<HddMetricDto>(metric)).ToList());
+        }
     }
 }

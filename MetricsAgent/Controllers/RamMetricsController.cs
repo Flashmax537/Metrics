@@ -51,5 +51,12 @@ namespace MetricsAgent.Controllers
             return Ok(_ramMetricsRepository.GetByTimePeriod(fromTime, toTime)
                 .Select(metric => _mapper.Map<RamMetricDto>(metric)).ToList());
         }
+
+        [HttpGet("all")]
+        public ActionResult<IList<RamMetricDto>> GetAllCpuMetrics()
+        {
+            return Ok(_ramMetricsRepository.GetAll()
+                .Select(metric => _mapper.Map<RamMetricDto>(metric)).ToList());
+        }
     }
 }

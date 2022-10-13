@@ -1,5 +1,7 @@
 using AutoMapper;
+using FluentMigrator.Runner;
 using MetricsAgent.Converters;
+using MetricsAgent.Job;
 using MetricsAgent.Models;
 using MetricsAgent.Services;
 using MetricsAgent.Services.Impl;
@@ -7,6 +9,9 @@ using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using NLog.Web;
+using Quartz;
+using Quartz.Impl;
+using Quartz.Spi;
 using System.Data.SQLite;
 
 namespace MetricsAgent
@@ -45,9 +50,34 @@ namespace MetricsAgent
 
             #endregion
 
+            #region Configure Jobs
+
+            // Регистрация сервиса фабрики
+            builder.Services.AddSingleton<IJobFactory, SingletonJobFactory>();
+            // Регистрация базового сервиса Quartz
+            builder.Services.AddSingleton<ISchedulerFactory, StdSchedulerFactory>();
+            // Регистрация сервиса самой задачи
+            builder.Services.AddSingleton<CpuMetricJob>();
+            builder.Services.AddSingleton<DotNetMetricJob>();
+            builder.Services.AddSingleton<HddMetricJob>();
+            builder.Services.AddSingleton<NetworkMetricJob>();
+            builder.Services.AddSingleton<RamMetricJob>();
+
+            // https://www.freeformatter.com/cron-expression-generator-quartz.html
+            builder.Services.AddSingleton(new JobSchedule(typeof(CpuMetricJob), "0/5 * * ? * * *"));
+
+            builder.Services.AddHostedService<QuartzHostedService>();
+
+            #endregion
+
             #region Configure Database
 
-            //ConfigureSqlLiteConnection(builder);
+            builder.Services.AddFluentMigratorCore()
+               .ConfigureRunner(rb =>
+               rb.AddSQLite()
+               .WithGlobalConnectionString(builder.Configuration["Settings:DatabaseOptions:ConnectionString"].ToString())
+               .ScanIn(typeof(Program).Assembly).For.Migrations()
+               ).AddLogging(lb => lb.AddFluentMigratorConsole());
 
             #endregion
 
@@ -101,51 +131,14 @@ namespace MetricsAgent
             app.UseAuthorization();
             app.UseHttpLogging();
             app.MapControllers();
-            app.Run();
-        }
-
-        private static void ConfigureSqlLiteConnection(WebApplicationBuilder? builder)
-        {
-            var connection = new SQLiteConnection(builder.Configuration["Settings:DatabaseOptions:ConnectionString"].ToString());
-            connection.Open();
-            PrepareSchema(connection);
-        }
-
-        private static void PrepareSchema(SQLiteConnection connection)
-        {
-            using (var command = new SQLiteCommand(connection))
+            var serviceScopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
+            using (IServiceScope serviceScope = serviceScopeFactory.CreateScope())
             {
-                // Задаём новый текст команды для выполнения
-                // Удаляем таблицу с метриками, если она есть в базе данных
-                command.CommandText = "DROP TABLE IF EXISTS cpumetrics";
-                command.CommandText = "DROP TABLE IF EXISTS dotnetmetrics";
-                command.CommandText = "DROP TABLE IF EXISTS hddmetrics";
-                command.CommandText = "DROP TABLE IF EXISTS networkmetrics";
-                command.CommandText = "DROP TABLE IF EXISTS rammetrics";
-                // Отправляем запрос в базу данных
-                command.ExecuteNonQuery();
-                command.CommandText =
-                    @"CREATE TABLE cpumetrics(id INTEGER
-                    PRIMARY KEY,
-                    value INT, time INT);
+                var migrationRunner = serviceScope.ServiceProvider.GetRequiredService<IMigrationRunner>();
+                migrationRunner.MigrateUp();
 
-                    CREATE TABLE dotnetmetrics(id INTEGER
-                    PRIMARY KEY,
-                    value INT, time INT);
-
-                    CREATE TABLE hddmetrics(id INTEGER
-                    PRIMARY KEY,
-                    value INT, time INT);
-
-                    CREATE TABLE networkmetrics(id INTEGER
-                    PRIMARY KEY,
-                    value INT, time INT);
-
-                    CREATE TABLE rammetrics(id INTEGER
-                    PRIMARY KEY,
-                    value INT, time INT)";
-                command.ExecuteNonQuery();
             }
+            app.Run();
         }
     }
 }
