@@ -1,5 +1,6 @@
 ﻿using MetricsManager.Controllers;
 using MetricsManager.Models;
+using MetricsManager.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -15,15 +16,15 @@ namespace MetricsManagerTests
     public class AgentsControllerTests
     {
         private AgentsController _agentsController;
-        private AgentPool _agentPool;
 
         public AgentsControllerTests()
         {
             var mockLogger = new Mock<ILogger<AgentsController>>();
             var logger = mockLogger.Object;
-            _agentPool = LazySingleton.Instance;
+            var mockMgentInfoRepository = new Mock<IAgentInfoRepository>();
+            var agentInfoRepository = mockMgentInfoRepository.Object;
 
-            _agentsController = new AgentsController(_agentPool, logger);
+            _agentsController = new AgentsController(logger, agentInfoRepository);
         }
 
         [Theory]

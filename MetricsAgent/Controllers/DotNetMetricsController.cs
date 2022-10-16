@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MetricsAgent.Controllers
 {
-    [Route("api/metrics/dotnet/errors-count/from")]
+    [Route("api/metrics/dotnet")]
     [ApiController]
     public class DotNetMetricsController : ControllerBase
     {
@@ -48,15 +48,31 @@ namespace MetricsAgent.Controllers
             [FromRoute] TimeSpan fromTime, [FromRoute] TimeSpan toTime)
         {
             _logger.LogInformation("Get dotNet metrics call.");
-            return Ok(_dotNetMetricsRepository.GetByTimePeriod(fromTime, toTime)
-                .Select(metric => _mapper.Map<DotNetMetricDto>(metric)).ToList());
+            Random random = new Random();
+            switch (random.Next(2))
+            {
+                case 0:
+                    return Ok(_dotNetMetricsRepository.GetByTimePeriod(fromTime, toTime)
+                        .Select(metric => _mapper.Map<DotNetMetricDto>(metric)).ToList());
+                case 1:
+                    throw new Exception("Internal Server Error.");
+            }
+            throw new Exception("Internal Server Error.");
         }
 
         [HttpGet("all")]
         public ActionResult<IList<DotNetMetricDto>> GetAllCpuMetrics()
         {
-            return Ok(_dotNetMetricsRepository.GetAll()
-                .Select(metric => _mapper.Map<DotNetMetricDto>(metric)).ToList());
+            Random random = new Random();
+            switch (random.Next(2))
+            {
+                case 0:
+                    return Ok(_dotNetMetricsRepository.GetAll()
+                        .Select(metric => _mapper.Map<DotNetMetricDto>(metric)).ToList());
+                case 1:
+                    throw new Exception("Internal Server Error.");
+            }
+            throw new Exception("Internal Server Error.");
         }
     }
 }

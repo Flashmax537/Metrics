@@ -1,9 +1,16 @@
+using AutoMapper;
+using FluentMigrator.Runner;
 using MetricsManager.Converters;
 using MetricsManager.Models;
+using MetricsManager.Services;
+using MetricsManager.Services.Client;
+using MetricsManager.Services.Client.Impl;
+using MetricsManager.Services.Impl;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using NLog.Web;
+using Polly;
 
 namespace MetricsManager
 {
@@ -34,9 +41,45 @@ namespace MetricsManager
 
             #endregion
 
+            #region Configure Options
+
+            builder.Services.Configure<DatabaseOptions>(options =>
+            {
+                builder.Configuration.GetSection("Settings:DatabaseOptions").Bind(options);
+            });
+
+            #endregion
+
+            #region Configure Database
+
+            builder.Services.AddFluentMigratorCore()
+               .ConfigureRunner(rb =>
+               rb.AddSQLite()
+               .WithGlobalConnectionString(builder.Configuration["Settings:DatabaseOptions:ConnectionString"].ToString())
+               .ScanIn(typeof(Program).Assembly).For.Migrations()
+               ).AddLogging(lb => lb.AddFluentMigratorConsole());
+
+            #endregion
+
+            #region Configure Repository
+
+            builder.Services.AddScoped<IAgentInfoRepository, AgentInfoRepository>();
+
+            #endregion
+
             // Add services to the container.
 
             builder.Services.AddSingleton<AgentPool>();
+
+            builder.Services.AddHttpClient<IMetricsAgentClient, MetricsAgentClient>()
+                .AddTransientHttpErrorPolicy(p => p.WaitAndRetryAsync(retryCount: 3,
+                sleepDurationProvider: (attemptCount) => TimeSpan.FromSeconds(attemptCount * 2),
+                onRetry: (response, sleepDuration, attemptCount, context) => {
+                    var logger = builder.Services.BuildServiceProvider().GetService<ILogger<Program>>();
+                    logger.LogError(response.Exception != null ? response.Exception :
+                        new Exception($"\n{response.Result.StatusCode}: {response.Result.RequestMessage}"),
+                        $"(attempt: {attemptCount}) request exception.");
+                }));
 
             builder.Services.AddControllers()
                .AddJsonOptions(options =>
@@ -67,6 +110,13 @@ namespace MetricsManager
             app.UseAuthorization();
             app.UseHttpLogging();
             app.MapControllers();
+            var serviceScopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
+            using (IServiceScope serviceScope = serviceScopeFactory.CreateScope())
+            {
+                var migrationRunner = serviceScope.ServiceProvider.GetRequiredService<IMigrationRunner>();
+                migrationRunner.MigrateUp();
+
+            }
             app.Run();
         }
     }

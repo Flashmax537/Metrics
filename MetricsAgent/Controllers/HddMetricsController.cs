@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MetricsAgent.Controllers
 {
-    [Route("api/metrics/hdd/left/from")]
+    [Route("api/metrics/hdd")]
     [ApiController]
     public class HddMetricsController : ControllerBase
     {
@@ -48,15 +48,31 @@ namespace MetricsAgent.Controllers
             [FromRoute] TimeSpan fromTime, [FromRoute] TimeSpan toTime)
         {
             _logger.LogInformation("Get hdd metrics call.");
-            return Ok(_hddMetricsRepository.GetByTimePeriod(fromTime, toTime)
-                .Select(metric => _mapper.Map<HddMetricDto>(metric)).ToList());
+            Random random = new Random();
+            switch (random.Next(2))
+            {
+                case 0:
+                    return Ok(_hddMetricsRepository.GetByTimePeriod(fromTime, toTime)
+                        .Select(metric => _mapper.Map<HddMetricDto>(metric)).ToList());
+                case 1:
+                    throw new Exception("Internal Server Error.");
+            }
+            throw new Exception("Internal Server Error.");
         }
 
         [HttpGet("all")]
         public ActionResult<IList<HddMetricDto>> GetAllCpuMetrics()
         {
-            return Ok(_hddMetricsRepository.GetAll()
-                .Select(metric => _mapper.Map<HddMetricDto>(metric)).ToList());
+            Random random = new Random();
+            switch (random.Next(2))
+            {
+                case 0:
+                    return Ok(_hddMetricsRepository.GetAll()
+                        .Select(metric => _mapper.Map<HddMetricDto>(metric)).ToList());
+                case 1:
+                    throw new Exception("Internal Server Error.");
+            }
+            throw new Exception("Internal Server Error.");
         }
     }
 }

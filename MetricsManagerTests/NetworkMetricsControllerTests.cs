@@ -1,4 +1,6 @@
 ﻿using MetricsManager.Controllers;
+using MetricsManager.Services;
+using MetricsManager.Services.Client;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -18,8 +20,14 @@ namespace MetricsManagerTests
         {
             var mockLogger = new Mock<ILogger<NetworkMetricsController>>();
             var logger = mockLogger.Object;
+            var mockMetricsAgentClient = new Mock<IMetricsAgentClient>();
+            var metricsAgentClient = mockMetricsAgentClient.Object;
+            var mockHttpClientFactory = new Mock<IHttpClientFactory>();
+            var httpClientFactory = mockHttpClientFactory.Object;
+            var mockAgentInfoRepository = new Mock<IAgentInfoRepository>();
+            var agentInfoRepository = mockAgentInfoRepository.Object;
 
-            _networkMetricsController = new NetworkMetricsController(logger);
+            _networkMetricsController = new NetworkMetricsController(logger, metricsAgentClient, httpClientFactory, agentInfoRepository);
         }
 
         [Fact]
