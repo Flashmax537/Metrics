@@ -48,31 +48,35 @@ namespace MetricsAgent.Controllers
             [FromRoute] TimeSpan fromTime, [FromRoute] TimeSpan toTime)
         {
             _logger.LogInformation("Get dotNet metrics call.");
-            Random random = new Random();
-            switch (random.Next(2))
-            {
-                case 0:
-                    return Ok(_dotNetMetricsRepository.GetByTimePeriod(fromTime, toTime)
-                        .Select(metric => _mapper.Map<DotNetMetricDto>(metric)).ToList());
-                case 1:
-                    throw new Exception("Internal Server Error.");
-            }
-            throw new Exception("Internal Server Error.");
+            return Ok(_dotNetMetricsRepository.GetByTimePeriod(fromTime, toTime)
+                       .Select(metric => _mapper.Map<DotNetMetricDto>(metric)).ToList());
+            //Random random = new Random();
+            //switch (random.Next(2))
+            //{
+            //    case 0:
+            //        return Ok(_dotNetMetricsRepository.GetByTimePeriod(fromTime, toTime)
+            //            .Select(metric => _mapper.Map<DotNetMetricDto>(metric)).ToList());
+            //    case 1:
+            //        throw new Exception("Internal Server Error.");
+            //}
+            //throw new Exception("Internal Server Error.");
         }
 
         [HttpGet("all")]
         public ActionResult<IList<DotNetMetricDto>> GetAllCpuMetrics()
         {
-            Random random = new Random();
-            switch (random.Next(2))
-            {
-                case 0:
-                    return Ok(_dotNetMetricsRepository.GetAll()
+            return Ok(_dotNetMetricsRepository.GetAll()
                         .Select(metric => _mapper.Map<DotNetMetricDto>(metric)).ToList());
-                case 1:
-                    throw new Exception("Internal Server Error.");
-            }
-            throw new Exception("Internal Server Error.");
+            //Random random = new Random();
+            //switch (random.Next(2))
+            //{
+            //    case 0:
+            //        return Ok(_dotNetMetricsRepository.GetAll()
+            //            .Select(metric => _mapper.Map<DotNetMetricDto>(metric)).ToList());
+            //    case 1:
+            //        throw new Exception("Internal Server Error.");
+            //}
+            //throw new Exception("Internal Server Error.");
         }
     }
 }

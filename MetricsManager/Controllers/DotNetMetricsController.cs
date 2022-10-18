@@ -32,9 +32,9 @@ namespace MetricsManager.Controllers
             _agentInfoRepository = agentInfoRepository;
         }
 
-        [HttpGet("agent/{agentId}/from/{fromTime}/to/{toTime}")]
-        public IActionResult GetMetricsFromAgent(
-            [FromRoute] int agentId, [FromRoute] TimeSpan fromTime, [FromRoute] TimeSpan toTime)
+        [HttpGet("get-all-by-id")]
+        public ActionResult<DotNetMetricsResponse> GetMetricsFromAgent(
+            [FromQuery] int agentId, [FromQuery] TimeSpan fromTime, [FromQuery] TimeSpan toTime)
         {
             _logger.LogInformation("Get metrics from agent call.");
             return Ok(_metricsAgentClient.GetDotNetMetrics(new DotNetMetricsRequest
@@ -45,36 +45,36 @@ namespace MetricsManager.Controllers
             }));
         }
 
-        [HttpGet("agent-old/{agentId}/from/{fromTime}/to/{toTime}")]
-        public ActionResult<DotNetMetricsResponse> GetMetricsFromAgentOld(
-            [FromRoute] int agentId, [FromRoute] TimeSpan fromTime, [FromRoute] TimeSpan toTime)
-        {
-            AgentInfo agentInfo = _agentInfoRepository.GetById(agentId);
-            if (agentInfo == null)
-                return BadRequest();
+        //[HttpGet("agent-old/{agentId}/from/{fromTime}/to/{toTime}")]
+        //public ActionResult<DotNetMetricsResponse> GetMetricsFromAgentOld(
+        //    [FromRoute] int agentId, [FromRoute] TimeSpan fromTime, [FromRoute] TimeSpan toTime)
+        //{
+        //    AgentInfo agentInfo = _agentInfoRepository.GetById(agentId);
+        //    if (agentInfo == null)
+        //        return BadRequest();
 
-            string requestStr =
-                $"{agentInfo.AgentAddress}api/metrics/dotNetMetric/from/{fromTime.ToString("dd\\.hh\\:mm\\:ss")}/to/{toTime.ToString("dd\\.hh\\:mm\\:ss")}";
-            HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, requestStr);
-            httpRequestMessage.Headers.Add("Accept", "application/json");
-            HttpClient httpClient = _httpClientFactory.CreateClient();
+        //    string requestStr =
+        //        $"{agentInfo.AgentAddress}api/metrics/dotNetMetric/from/{fromTime.ToString("dd\\.hh\\:mm\\:ss")}/to/{toTime.ToString("dd\\.hh\\:mm\\:ss")}";
+        //    HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, requestStr);
+        //    httpRequestMessage.Headers.Add("Accept", "application/json");
+        //    HttpClient httpClient = _httpClientFactory.CreateClient();
 
-            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-            cancellationTokenSource.CancelAfter(3000); // 3 сек
+        //    CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+        //    cancellationTokenSource.CancelAfter(3000); // 3 сек
 
-            HttpResponseMessage response = httpClient.Send(httpRequestMessage, cancellationTokenSource.Token);
-            if (response.IsSuccessStatusCode)
-            {
-                string responseStr = response.Content.ReadAsStringAsync().Result;
-                var metrics = JsonConvert.DeserializeObject<DotNetMetric[]>(responseStr);
-                return Ok(new DotNetMetricsResponse() { AgentId = agentId, Metrics = metrics });
-            }
-            return BadRequest();
-        }
+        //    HttpResponseMessage response = httpClient.Send(httpRequestMessage, cancellationTokenSource.Token);
+        //    if (response.IsSuccessStatusCode)
+        //    {
+        //        string responseStr = response.Content.ReadAsStringAsync().Result;
+        //        var metrics = JsonConvert.DeserializeObject<DotNetMetric[]>(responseStr);
+        //        return Ok(new DotNetMetricsResponse() { AgentId = agentId, Metrics = metrics });
+        //    }
+        //    return BadRequest();
+        //}
 
-        [HttpGet("all/from/{fromTime}/to/{toTime}")]
+        [HttpGet("get-all")]
         public IActionResult GetMetricsFromAll(
-            [FromRoute] TimeSpan fromTime, [FromRoute] TimeSpan toTime)
+            [FromQuery] TimeSpan fromTime, [FromQuery] TimeSpan toTime)
         {
             _logger.LogInformation("Get metrics from all call.");
             return Ok();

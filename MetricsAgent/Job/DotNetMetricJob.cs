@@ -12,12 +12,11 @@ namespace MetricsAgent.Job
         public DotNetMetricJob(IServiceScopeFactory serviceScopeFactory)
         {
             _serviceScopeFactory = serviceScopeFactory;
-            _dotNetCounter = new PerformanceCounter(".NET CLR Memory", "Gen 0 heap size", Process.GetCurrentProcess().ProcessName);
+            _dotNetCounter = new PerformanceCounter(".NET CLR Memory", "Process ID", "MSBuild");
         }
 
         public Task Execute(IJobExecutionContext context)
         {
-
             using (IServiceScope serviceScope = _serviceScopeFactory.CreateScope())
             {
                 var dotNetMetricsRepository = serviceScope.ServiceProvider.GetService<IDotNetMetricsRepository>();

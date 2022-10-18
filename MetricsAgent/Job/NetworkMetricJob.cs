@@ -11,13 +11,16 @@ namespace MetricsAgent.Job
 
         public NetworkMetricJob(IServiceScopeFactory serviceScopeFactory)
         {
+            PerformanceCounterCategory pcNetworkInterface = new PerformanceCounterCategory("Network Interface");
+
+            _networkCounter = new PerformanceCounter("Network Interface", "Bytes Sent/sec", 
+                pcNetworkInterface.GetInstanceNames().Where(x => x != "MS TCP Loopback interface").First());
+
             _serviceScopeFactory = serviceScopeFactory;
-            _networkCounter = new PerformanceCounter("Network Interface", "Bytes Sent/sec", "get connection string from WMI");
         }
 
         public Task Execute(IJobExecutionContext context)
         {
-
             using (IServiceScope serviceScope = _serviceScopeFactory.CreateScope())
             {
                 var networkMetricsRepository = serviceScope.ServiceProvider.GetService<INetworkMetricsRepository>();

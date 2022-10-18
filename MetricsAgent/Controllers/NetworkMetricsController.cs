@@ -48,31 +48,35 @@ namespace MetricsAgent.Controllers
             [FromRoute] TimeSpan fromTime, [FromRoute] TimeSpan toTime)
         {
             _logger.LogInformation("Get network metrics call.");
-            Random random = new Random();
-            switch (random.Next(2))
-            {
-                case 0:
-                    return Ok(_networkMetricsRepository.GetByTimePeriod(fromTime, toTime)
+            return Ok(_networkMetricsRepository.GetByTimePeriod(fromTime, toTime)
                         .Select(metric => _mapper.Map<NetworkMetricDto>(metric)).ToList());
-                case 1:
-                    throw new Exception("Internal Server Error.");
-            }
-            throw new Exception("Internal Server Error.");
+            //Random random = new Random();
+            //switch (random.Next(2))
+            //{
+            //    case 0:
+            //        return Ok(_networkMetricsRepository.GetByTimePeriod(fromTime, toTime)
+            //            .Select(metric => _mapper.Map<NetworkMetricDto>(metric)).ToList());
+            //    case 1:
+            //        throw new Exception("Internal Server Error.");
+            //}
+            //throw new Exception("Internal Server Error.");
         }
 
         [HttpGet("all")]
         public ActionResult<IList<NetworkMetricDto>> GetAllCpuMetrics()
         {
-            Random random = new Random();
-            switch (random.Next(2))
-            {
-                case 0:
-                    return Ok(_networkMetricsRepository.GetAll()
+            return Ok(_networkMetricsRepository.GetAll()
                         .Select(metric => _mapper.Map<NetworkMetricDto>(metric)).ToList());
-                case 1:
-                    throw new Exception("Internal Server Error.");
-            }
-            throw new Exception("Internal Server Error.");
+            //Random random = new Random();
+            //switch (random.Next(2))
+            //{
+            //    case 0:
+            //        return Ok(_networkMetricsRepository.GetAll()
+            //            .Select(metric => _mapper.Map<NetworkMetricDto>(metric)).ToList());
+            //    case 1:
+            //        throw new Exception("Internal Server Error.");
+            //}
+            //throw new Exception("Internal Server Error.");
         }
     }
 }

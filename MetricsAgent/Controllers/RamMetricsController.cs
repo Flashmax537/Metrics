@@ -48,31 +48,35 @@ namespace MetricsAgent.Controllers
             [FromRoute] TimeSpan fromTime, [FromRoute] TimeSpan toTime)
         {
             _logger.LogInformation("Get ram metrics call.");
-            Random random = new Random();
-            switch (random.Next(2))
-            {
-                case 0:
-                    return Ok(_ramMetricsRepository.GetByTimePeriod(fromTime, toTime)
+            return Ok(_ramMetricsRepository.GetByTimePeriod(fromTime, toTime)
                         .Select(metric => _mapper.Map<RamMetricDto>(metric)).ToList());
-                case 1:
-                    throw new Exception("Internal Server Error.");
-            }
-            throw new Exception("Internal Server Error.");
+            //Random random = new Random();
+            //switch (random.Next(2))
+            //{
+            //    case 0:
+            //        return Ok(_ramMetricsRepository.GetByTimePeriod(fromTime, toTime)
+            //            .Select(metric => _mapper.Map<RamMetricDto>(metric)).ToList());
+            //    case 1:
+            //        throw new Exception("Internal Server Error.");
+            //}
+            //throw new Exception("Internal Server Error.");
         }
 
         [HttpGet("all")]
         public ActionResult<IList<RamMetricDto>> GetAllCpuMetrics()
         {
-            Random random = new Random();
-            switch (random.Next(2))
-            {
-                case 0:
-                    return Ok(_ramMetricsRepository.GetAll()
+            return Ok(_ramMetricsRepository.GetAll()
                         .Select(metric => _mapper.Map<RamMetricDto>(metric)).ToList());
-                case 1:
-                    throw new Exception("Internal Server Error.");
-            }
-            throw new Exception("Internal Server Error.");
+            //Random random = new Random();
+            //switch (random.Next(2))
+            //{
+            //    case 0:
+            //        return Ok(_ramMetricsRepository.GetAll()
+            //            .Select(metric => _mapper.Map<RamMetricDto>(metric)).ToList());
+            //    case 1:
+            //        throw new Exception("Internal Server Error.");
+            //}
+            //throw new Exception("Internal Server Error.");
         }
     }
 }

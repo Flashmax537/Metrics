@@ -17,7 +17,6 @@ namespace MetricsAgent.Job
 
         public Task Execute(IJobExecutionContext context)
         {
-
             using (IServiceScope serviceScope = _serviceScopeFactory.CreateScope())
             {
                 var ramMetricsRepository = serviceScope.ServiceProvider.GetService<IRamMetricsRepository>();
