@@ -12,7 +12,7 @@ namespace MetricsAgent.Job
         public DotNetMetricJob(IServiceScopeFactory serviceScopeFactory)
         {
             _serviceScopeFactory = serviceScopeFactory;
-            _dotNetCounter = new PerformanceCounter(".NET CLR Memory", "Process ID", "MSBuild");
+            _dotNetCounter = new PerformanceCounter(".NET CLR Memory", "% Time in GC", "_Global_");
         }
 
         public Task Execute(IJobExecutionContext context)
